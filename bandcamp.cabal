@@ -1,0 +1,16 @@
+name: bandcamp
+version: 0.1.0.0
+license: BSD3
+license-file: LICENSE
+author: iokasimov
+maintainer: qkasimov@gmail.com
+category: Web
+build-type: Simple
+extra-source-files: README.md
+cabal-version: >=1.10
+
+executable bandcamp
+  main-is: Main.hs
+  build-depends: base
+  default-extensions: OverloadedStrings
+  default-language: Haskell2010

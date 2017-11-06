@@ -9,8 +9,13 @@ build-type: Simple
 extra-source-files: README.md
 cabal-version: >=1.10
 
+library
+  build-depends: base, text, aeson, wreq, bytestring, lens, http-client, directory, async
+  exposed-modules: Entities.File, Entities.Track, Entities.Current, Entities.Album
+  default-extensions: OverloadedStrings
+
 executable bandcamp
   main-is: Main.hs
-  build-depends: base
+  build-depends: base, text, aeson, bytestring, lens, wreq, http-client, directory, async
   default-extensions: OverloadedStrings
   default-language: Haskell2010

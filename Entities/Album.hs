@@ -1,4 +1,4 @@
-module Entities.Album (Album(..), download) where
+module Entities.Album (Album (..), download) where
 
 import Data.Aeson
 import Data.Monoid
@@ -9,7 +9,7 @@ import Control.Lens
 import Control.Concurrent.Async
 import Network.Wreq
 import Network.HTTP.Client hiding (responseBody)
-import System.Directory
+import System.Directory (createDirectory, makeRelativeToCurrentDirectory)
 import qualified Data.ByteString.Lazy as Lazybytes
 
 import qualified Entities.Track as Track
@@ -29,8 +29,8 @@ instance FromJSON Album where
 		<*> o .: "art_id"
 
 create_folder :: Album -> IO FilePath
-create_folder album = makeRelativeToCurrentDirectory 
-	((mappend "Temporary/" . T.unpack . Current.atitle . current) album) >>= 
+create_folder album = makeRelativeToCurrentDirectory
+	((mappend "Temporary/" . T.unpack . Current.atitle . current) album) >>=
 		\dir -> createDirectory dir >> return dir
 
 download_cover :: FilePath -> Integer -> IO ()
@@ -50,6 +50,6 @@ download album = do
 	dir <- create_folder album
 	download_cover dir $ aid album
 	_ <- runConcurrently $
-		traverse (Concurrently . Track.download dir) $ 
+		traverse (Concurrently . Track.download dir) $
 		trackinfo album
 	return ()

@@ -1,14 +1,9 @@
-import qualified Entities.File as File
-import qualified Entities.Track as Track
-import qualified Entities.Current as Current
-import qualified Entities.Album as Album
+import Prelude hiding (readFile)
 
-import Data.Aeson
-import qualified Data.ByteString.Lazy as Lazybytes
+import Data.Aeson (decode)
+import Data.ByteString.Lazy (readFile)
 
-type Album = Album.Album
+import Entities.Album (Album, download)
 
-main = Lazybytes.readFile "scheme.json" >>= 
-	\scheme -> case (decode scheme :: Maybe Album) of
-		Just album -> Album.download album
-		Nothing -> print "Error: album.json is invalid..."
+main = decode @Album <$> readFile "scheme.json" >>= maybe
+	(print "Error: album.json is invalid...") download

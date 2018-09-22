@@ -4,7 +4,7 @@ import "base" Control.Applicative ((*>), pure)
 import "base" Control.Monad (void, (>>=))
 import "base" Control.Exception (try)
 import "base" Data.Either (Either (Left, Right), either)
-import "base" Data.Function ((.), ($))
+import "base" Data.Function ((.), ($), flip)
 import "base" Data.Functor ((<$>))
 import "base" Data.Int (Int)
 import "base" Data.Maybe (maybe)
@@ -31,8 +31,10 @@ track (Track title (File link)) = lift request >>= either (lift . print)
 	request = try . get . unpack $ link
 
 	save :: ByteString -> ReaderT FilePath IO ()
-	save bytes = ask >>= \dir -> lift $ writeFile
-		(dir <> "/" <> "cover.jpg") bytes
+	save bytes = ask >>= lift . flip writeFile bytes . path
+
+	path :: FilePath -> FilePath
+	path dir = dir <> "/" <> unpack title <> ".mp3"
 
 	failed :: ReaderT FilePath IO ()
 	failed = lift . print $ "Failed downloading track: " <> title
@@ -42,11 +44,13 @@ cover aid = lift request >>= either (lift . print)
 	(maybe failed save . preview responseBody) where
 
 	request :: IO (Either HttpException (Response ByteString))
-	request = try . get $ "http://f4.bcbits.com/img/a" <> (show aid) <> "_10.jpg"
+	request = try . get $ "http://f4.bcbits.com/img/a" <> show aid <> "_10.jpg"
 
 	save :: ByteString -> ReaderT FilePath IO ()
-	save bytes = ask >>= \dir -> lift $ writeFile
-		(dir <> "/" <> "cover.jpg") bytes
+	save bytes = ask >>= lift . flip writeFile bytes . path
+
+	path :: FilePath -> FilePath
+	path dir = dir <> "/cover.jpg"
 
 	failed :: ReaderT FilePath IO ()
 	failed = lift $ print "Failed: downloading cover"

@@ -1,55 +1,58 @@
 module Entities.Album (Album (..), download) where
 
-import Data.Aeson
-import Data.Monoid
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import Control.Exception
-import Control.Lens
-import Control.Concurrent.Async
-import Network.Wreq
-import Network.HTTP.Client hiding (responseBody)
+import Prelude hiding (writeFile)
+import Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
+import Data.Monoid ((<>))
+import Data.Text (Text, unpack)
+import Control.Exception (try)
+import Control.Lens (preview)
+import Control.Concurrent.Async (Concurrently (Concurrently), runConcurrently)
+import Control.Monad (void)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Reader (ReaderT (ReaderT, runReaderT), ask)
+import Network.Wreq (get, responseBody)
+import Network.HTTP.Client (HttpException, Response)
 import System.Directory (createDirectory, makeRelativeToCurrentDirectory)
-import qualified Data.ByteString.Lazy as Lazybytes
+import Data.ByteString.Lazy (ByteString, writeFile)
 
-import qualified Entities.Track as Track
-import qualified Entities.Current as Current
+import Entities.Current (Current, atitle)
+import Entities.Track (Track)
 
-type Track = Track.Track
-type Current = Current.Current
-type Lazybytes = Lazybytes.ByteString
+import qualified Entities.Track as Track (download)
 
-data Album = Album { current :: Current, trackinfo :: [Track], artist :: T.Text, aid :: Integer } deriving Show
+type Artist = Text
+
+data Album = Album Current [Track] Text Integer
+	deriving Show
 
 instance FromJSON Album where
 	parseJSON (Object o) = Album
-		<$> o .: "current"
-		<*> o .: "trackinfo"
-		<*> o .: "artist"
-		<*> o .: "art_id"
+		<$> o .: "current" <*> o .: "trackinfo"
+		<*> o .: "artist" <*> o .: "art_id"
 
 create_folder :: Album -> IO FilePath
-create_folder album = makeRelativeToCurrentDirectory
-	((mappend "Temporary/" . T.unpack . Current.atitle . current) album) >>=
+create_folder (Album current _ _ _) = makeRelativeToCurrentDirectory
+	(mappend "Temporary/" . unpack . atitle $ current) >>=
 		\dir -> createDirectory dir >> return dir
 
-download_cover :: FilePath -> Integer -> IO ()
-download_cover dir aid = requesting aid >>= saving dir where
+download_cover :: Integer -> ReaderT FilePath IO ()
+download_cover aid = lift request >>= either (lift . print)
+	(maybe failed save . preview responseBody) where
 
-	requesting :: Integer -> IO (Either HttpException (Response Lazybytes))
-	requesting aid = try $ get $ "http://f4.bcbits.com/img/a" <> (show aid) <> "_10.jpg"
+	request :: IO (Either HttpException (Response ByteString))
+	request = try . get $ "http://f4.bcbits.com/img/a" <> (show aid) <> "_10.jpg"
 
-	saving :: String -> Either HttpException (Response Lazybytes) -> IO ()
-	saving dir (Right res) = case res ^? responseBody of
-		Nothing -> T.putStrLn $ "Error: failed downloading cover"
-		Just cover -> Lazybytes.writeFile (dir <> "/" <> "cover.jpg") cover
-	saving _ (Left error) = print error
+	save :: ByteString -> ReaderT FilePath IO ()
+	save bytes = ask >>= \dir -> lift $ writeFile
+		(dir <> "/" <> "cover.jpg") bytes
+
+	failed :: ReaderT FilePath IO ()
+	failed = lift $ print "Failed: downloading cover"
+
+download_tracks :: [Track] -> ReaderT FilePath IO ()
+download_tracks ts = ask >>= \dir -> lift .	void . runConcurrently
+	. traverse (Concurrently . Track.download dir) $ ts
 
 download :: Album -> IO ()
-download album = do
-	dir <- create_folder album
-	download_cover dir $ aid album
-	_ <- runConcurrently $
-		traverse (Concurrently . Track.download dir) $
-		trackinfo album
-	return ()
+download album@(Album _ tracks _ aid') = create_folder album >>=
+	runReaderT (download_cover aid' *> download_tracks tracks)

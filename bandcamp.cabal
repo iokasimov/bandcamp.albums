@@ -11,11 +11,11 @@ cabal-version: >=1.10
 
 library
   build-depends: base, text, aeson, wreq, bytestring, lens, http-client, directory, async, transformers
-  exposed-modules: Entities.File, Entities.Track, Entities.Current, Entities.Album
-  default-extensions: LambdaCase, OverloadedStrings, TypeApplications
+  exposed-modules: Data.Bandcamp
+  default-extensions: LambdaCase, OverloadedStrings, PackageImports, TypeApplications
 
 executable bandcamp
   main-is: Main.hs
   build-depends: base, text, aeson, bytestring, lens, wreq, http-client, directory, async, transformers
-  default-extensions: LambdaCase, OverloadedStrings, TypeApplications
+  default-extensions: LambdaCase, NoImplicitPrelude, OverloadedStrings, PackageImports, TypeApplications
   default-language: Haskell2010

@@ -5,7 +5,7 @@ import "base" Control.Monad (void, (>>=))
 import "base" Control.Exception (try)
 import "base" Data.Either (Either (Left, Right), either)
 import "base" Data.Function ((.), ($), flip)
-import "base" Data.Functor ((<$>))
+import "base" Data.Functor ((<$>), ($>))
 import "base" Data.Int (Int)
 import "base" Data.Maybe (maybe)
 import "base" Data.Monoid ((<>))
@@ -56,13 +56,13 @@ cover aid = lift request >>= either (lift . print)
 	failed = lift $ print "Failed: downloading cover"
 
 album :: Album -> IO ()
-album (Album (Current title) ts _ aid') = folder >>=
+album (Album (Current title) ts _ aid') = make_directory >>=
 	runReaderT (cover aid' *> void (traverse track ts)) where
 
-	folder :: IO FilePath
-	folder = makeRelativeToCurrentDirectory
-		((<>) "Temporary/" . unpack $ title) >>=
-			\dir -> createDirectory dir *> pure dir
+	make_directory :: IO FilePath
+	make_directory = do
+		let dir = "Temporary/" <> (unpack title)
+		createDirectory dir $> dir
 
 main = decode @Album <$> readFile "scheme.json" >>= maybe
 	(print "Error: album.json is invalid...") album

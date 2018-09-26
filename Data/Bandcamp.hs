@@ -1,4 +1,4 @@
-module Data.Bandcamp (Album (..), Current (..), File (..), Track (..)) where
+module Data.Bandcamp (Album (..), Current (..), Filename (..), Track (..)) where
 
 import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
 import "base" Control.Applicative ((<*>))
@@ -6,12 +6,12 @@ import "base" Data.Functor ((<$>))
 import "base" Data.Int (Int)
 import "text" Data.Text (Text)
 
-data File = File Text
+data Filename = Filename Text
 
-instance FromJSON File where
-	parseJSON (Object o) = File <$> o .: "mp3-128"
+instance FromJSON Filename where
+	parseJSON (Object o) = Filename <$> o .: "mp3-128"
 
-data Track = Track Text File
+data Track = Track Text Filename
 
 instance FromJSON Track where
 	parseJSON (Object o) = Track <$> o .: "title" <*> o .: "file"

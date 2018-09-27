@@ -2,3 +2,5 @@
 Temporary/
 scheme.json
 .DS_Store
+dist
+dist-newstyle

@@ -10,59 +10,56 @@ import "base" Data.Int (Int)
 import "base" Data.Maybe (maybe)
 import "base" Data.Monoid ((<>))
 import "base" Data.Traversable (traverse)
-import "base" System.IO (FilePath, IO, print)
+import "base" System.IO (IO, print)
 import "base" Text.Show (show)
 import "bytestring" Data.ByteString.Lazy (ByteString, readFile, writeFile)
-import "directory" System.Directory (createDirectory, makeRelativeToCurrentDirectory)
 import "http-client" Network.HTTP.Client (HttpException, Response)
 import "lens" Control.Lens (preview)
+import "monopati" System.Monopati (Path (Path), Reference (Absolute), Points (Directory, File), part, (<^>), (</>))
+import "monopati" System.Monopati.Posix (create)
 import "text" Data.Text (Text, unpack)
 import "transformers" Control.Monad.Trans.Class (lift)
 import "transformers" Control.Monad.Trans.Reader (ReaderT (ReaderT, runReaderT), ask)
 import "wreq" Network.Wreq (get, responseBody)
 
-import Data.Bandcamp (Album (..), Current (..), File (..), Track (..))
+import Data.Bandcamp (Album (..), Current (..), Filename (..), Track (..))
 
-track :: Track -> ReaderT FilePath IO ()
-track (Track title (File link)) = lift request >>= either (lift . print)
+track :: Track -> ReaderT (Path Absolute Directory) IO ()
+track (Track title (Filename link)) = lift request >>= either (lift . print)
 	(maybe failed save . preview responseBody) where
 
 	request :: IO (Either HttpException (Response ByteString))
-	request = try . get . unpack $ link
+	request = try . get $ link
 
-	save :: ByteString -> ReaderT FilePath IO ()
-	save bytes = ask >>= lift . flip writeFile bytes . path
+	save :: ByteString -> ReaderT (Path Absolute Directory) IO ()
+	save bytes = ask >>= lift . flip writeFile bytes . show . place
 
-	path :: FilePath -> FilePath
-	path dir = dir <> "/" <> unpack title <> ".mp3"
+	place :: Path Absolute Directory -> Path Absolute File
+	place dir = dir </> part (title <> ".mp3")
 
-	failed :: ReaderT FilePath IO ()
+	failed :: ReaderT (Path Absolute Directory) IO ()
 	failed = lift . print $ "Failed downloading track: " <> title
 
-cover :: Int -> ReaderT FilePath IO ()
+cover :: Int -> ReaderT (Path Absolute Directory) IO ()
 cover aid = lift request >>= either (lift . print)
 	(maybe failed save . preview responseBody) where
 
 	request :: IO (Either HttpException (Response ByteString))
 	request = try . get $ "http://f4.bcbits.com/img/a" <> show aid <> "_10.jpg"
 
-	save :: ByteString -> ReaderT FilePath IO ()
-	save bytes = ask >>= lift . flip writeFile bytes . path
+	save :: ByteString -> ReaderT (Path Absolute Directory) IO ()
+	save bytes = ask >>= lift . flip writeFile bytes . show . place
 
-	path :: FilePath -> FilePath
-	path dir = dir <> "/cover.jpg"
+	place :: Path Absolute Directory -> Path Absolute File
+	place dir = dir </> part "cover.jpg"
 
-	failed :: ReaderT FilePath IO ()
+	failed :: ReaderT (Path Absolute Directory) IO ()
 	failed = lift $ print "Failed: downloading cover"
 
 album :: Album -> IO ()
-album (Album (Current title) ts _ aid') = make_directory >>=
-	runReaderT (cover aid' *> void (traverse track ts)) where
+album (Album (Current title) ts _ aid') =
+	create (part "Temporary" <^> part title) >>=
+		runReaderT (cover aid' *> void (traverse track ts)) where
 
-	make_directory :: IO FilePath
-	make_directory = do
-		let dir = "Temporary/" <> (unpack title)
-		createDirectory dir $> dir
-
-main = decode @Album <$> readFile "scheme.json" >>= maybe
-	(print "Error: album.json is invalid...") album
+main = decode @Album <$> readFile "scheme.json" >>=
+	maybe (print "Error: album.json is invalid...") album

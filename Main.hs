@@ -15,13 +15,12 @@ import "base" Text.Show (show)
 import "bytestring" Data.ByteString.Lazy (ByteString, readFile, writeFile)
 import "http-client" Network.HTTP.Client (HttpException, Response)
 import "lens" Control.Lens (preview)
+import "monopati" System.Monopati (Path (Path), Reference (Absolute), Points (Directory, File), part, (<^>), (</>))
+import "monopati" System.Monopati.Posix (create)
 import "text" Data.Text (Text, unpack)
 import "transformers" Control.Monad.Trans.Class (lift)
 import "transformers" Control.Monad.Trans.Reader (ReaderT (ReaderT, runReaderT), ask)
 import "wreq" Network.Wreq (get, responseBody)
-
-import "pathway" System.Pathway (Path (Path), Reference (Absolute), Points (Directory, File), part, (<^>), (</>))
-import "pathway" System.Pathway.Posix (create)
 
 import Data.Bandcamp (Album (..), Current (..), Filename (..), Track (..))
 
@@ -30,13 +29,13 @@ track (Track title (Filename link)) = lift request >>= either (lift . print)
 	(maybe failed save . preview responseBody) where
 
 	request :: IO (Either HttpException (Response ByteString))
-	request = try . get . unpack $ link
+	request = try . get $ link
 
 	save :: ByteString -> ReaderT (Path Absolute Directory) IO ()
 	save bytes = ask >>= lift . flip writeFile bytes . show . place
 
 	place :: Path Absolute Directory -> Path Absolute File
-	place dir = dir </> part (unpack title <> ".mp3")
+	place dir = dir </> part (title <> ".mp3")
 
 	failed :: ReaderT (Path Absolute Directory) IO ()
 	failed = lift . print $ "Failed downloading track: " <> title
@@ -59,7 +58,7 @@ cover aid = lift request >>= either (lift . print)
 
 album :: Album -> IO ()
 album (Album (Current title) ts _ aid') =
-	create (part "Temporary" <^> part (unpack title)) >>=
+	create (part "Temporary" <^> part title) >>=
 		runReaderT (cover aid' *> void (traverse track ts)) where
 
 main = decode @Album <$> readFile "scheme.json" >>=

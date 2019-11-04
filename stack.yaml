@@ -39,7 +39,9 @@ packages:
 - '.'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+- {git: "https://github.com/iokasimov/monopati", commit: "676699fbc780eef387a855f072107921efe6af05"}
+- peano-0.1.0.1@sha256:132eb909b1214d16c94a3a4b3bf27abbf5e0f6c21022261ed3d3597a98dc6081,474
 
 # Override default flag values for local packages and extra-deps
 flags: {}

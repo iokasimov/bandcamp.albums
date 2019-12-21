@@ -4,3 +4,5 @@ scheme.json
 .DS_Store
 dist
 dist-newstyle
+stack.yaml.lock
+.gitignore

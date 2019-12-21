@@ -16,6 +16,6 @@ library
 
 executable bandcamp
   main-is: Main.hs
-  build-depends: base, text, aeson, bytestring, lens, wreq, http-client, directory, async, transformers, monopati
+  build-depends: base, text, aeson, bytestring, lens, wreq, http-client, directory, async, transformers, directory, filepath
   default-extensions: DataKinds, LambdaCase, NoImplicitPrelude, OverloadedStrings, PackageImports, TypeApplications
   default-language: Haskell2010

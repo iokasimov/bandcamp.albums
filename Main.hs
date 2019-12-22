@@ -27,7 +27,8 @@ import "wreq" Network.Wreq (get, responseBody)
 import Data.Bandcamp (Album (..), Current (..), Filename (..), Track (..))
 
 track :: Track -> ReaderT FilePath IO ()
-track (Track title (Filename link)) = lift request >>= either (lift . print)
+track (Track title (Filename Nothing)) = lift . print $ "Track <" <> title <> "> not found..."
+track (Track title (Filename (Just link))) = lift request >>= either (lift . print)
 	(maybe failed save . preview responseBody) where
 
 	request :: IO (Either HttpException (Response ByteString))

@@ -10,9 +10,15 @@ extra-source-files: README.md
 cabal-version: >=1.10
 
 library
-  build-depends: base, text, aeson, wreq, bytestring, lens, http-client, directory, async, transformers
-  default-extensions: LambdaCase, OverloadedStrings, PackageImports, TypeApplications
-  exposed-modules: Data.Bandcamp
+  build-depends: base, text, aeson, wreq, bytestring, lens, http-client, directory, async, transformers, filepath
+  default-extensions: LambdaCase, NoImplicitPrelude, OverloadedStrings, PackageImports, TypeApplications
+  exposed-modules:
+    Data.Downloadable
+    Data.Bandcamp
+    Data.Bandcamp.Cover
+    Data.Bandcamp.Filename
+    Data.Bandcamp.Track
+    Data.Bandcamp.Album
 
 executable bandcamp
   main-is: Main.hs

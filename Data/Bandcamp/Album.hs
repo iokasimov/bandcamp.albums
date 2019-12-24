@@ -1,11 +1,15 @@
 module Data.Bandcamp.Album where
 
 import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
+import "async" Control.Concurrent.Async (Concurrently (Concurrently, runConcurrently))
 import "base" Control.Applicative ((<*>), (*>))
 import "base" Control.Monad (void)
+import "base" Data.Function ((.), ($))
 import "base" Data.Functor ((<$>))
 import "base" Data.String (String)
 import "base" Data.Traversable (traverse)
+import "transformers" Control.Monad.Trans.Class (lift)
+import "transformers" Control.Monad.Trans.Reader (mapReaderT)
 
 import Data.Downloadable (Downloadable (download))
 import Data.Bandcamp.Cover (Cover (Cover))
@@ -21,5 +25,8 @@ instance FromJSON Album where
 		<*> o .: "artist" <*> (Cover <$> o .: "art_id")
 
 instance Downloadable Album where
-	download a@(Album (Current album) ts artist cover) =
-		download cover *> void (traverse download ts)
+	download a@(Album (Current album) tracks artist cover) =
+		download cover *> concurrently_download_tracks where
+
+		concurrently_download_tracks = void . mapReaderT runConcurrently
+			. traverse (mapReaderT Concurrently . download) $ ts

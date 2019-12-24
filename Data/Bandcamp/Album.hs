@@ -26,7 +26,7 @@ instance FromJSON Album where
 
 instance Downloadable Album where
 	download a@(Album (Current album) tracks artist cover) =
-		download cover *> concurrently_download_tracks where
+		download cover *> concurrently_download tracks where
 
-		concurrently_download_tracks = void . mapReaderT runConcurrently
+		concurrently_download ts = void . mapReaderT runConcurrently
 			. traverse (mapReaderT Concurrently . download) $ ts

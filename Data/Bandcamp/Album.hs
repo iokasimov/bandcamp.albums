@@ -8,6 +8,8 @@ import "base" Data.Function ((.), ($))
 import "base" Data.Functor ((<$>))
 import "base" Data.String (String)
 import "base" Data.Traversable (traverse)
+import "terminal-progress-bar" System.ProgressBar
+	(Progress (Progress), defStyle, incProgress, newProgressBar)
 import "transformers" Control.Monad.Trans.Class (lift)
 import "transformers" Control.Monad.Trans.Reader (mapReaderT)
 
@@ -28,5 +30,9 @@ instance Downloadable Album where
 	download a@(Album (Current album) tracks artist cover) =
 		download cover *> concurrently_download tracks where
 
-		concurrently_download ts = void . mapReaderT runConcurrently
-			. traverse (mapReaderT Concurrently . download) $ ts
+		concurrently_download ts = do
+			pb <- lift $ newProgressBar defStyle 10 $ Progress 0 20 ()
+			void . mapReaderT runConcurrently . traverse (download_track pb) $ ts
+
+		download_track pb track = mapReaderT Concurrently $
+			download track *> lift (incProgress pb 1)

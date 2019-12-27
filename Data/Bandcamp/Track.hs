@@ -1,6 +1,7 @@
 module Data.Bandcamp.Track where
 
 import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
+import "async" Control.Concurrent.Async (Concurrently (Concurrently))
 import "base" Control.Applicative ((<*>))
 import "base" Control.Monad ((>>=))
 import "base" Control.Exception (try)
@@ -14,9 +15,11 @@ import "base" System.IO (IO, print)
 import "bytestring" Data.ByteString.Lazy (ByteString, readFile, writeFile)
 import "filepath" System.FilePath.Posix (FilePath, (</>))
 import "http-client" Network.HTTP.Client (HttpException, Response)
+import "joint" Control.Joint.Core (type (:=))
+import "joint" Control.Joint.Modulator ((-<$>-))
+import "joint" Control.Joint.Transformer (type (:>), embed, build, unite)
+import "joint" Control.Joint.Base.Reader (Reader, ask)
 import "lens" Control.Lens (preview)
-import "transformers" Control.Monad.Trans.Class (lift)
-import "transformers" Control.Monad.Trans.Reader (ReaderT, ask)
 import "wreq" Network.Wreq (get, responseBody)
 
 import Data.Downloadable (Downloadable (download))
@@ -28,18 +31,18 @@ instance FromJSON Track where
 	parseJSON (Object o) = Track <$> o .: "title" <*> o .: "file"
 
 instance Downloadable Track where
-	download (Track title (Filename Nothing)) = lift . print $ "Track <" <> title <> "> not found..."
-	download (Track title (Filename (Just link))) = lift request >>= either (lift . print)
-		(maybe failed save . preview responseBody) where
+	download (Track title (Filename Nothing)) = embed . Concurrently . print $ "Track <" <> title <> "> not found..."
+	download (Track title (Filename (Just link))) = Concurrently -<$>- (embed request >>= either (embed . print)
+		(maybe failed save . preview responseBody)) where
 
 		request :: IO (Either HttpException (Response ByteString))
 		request = try . get $ link
 
-		save :: ByteString -> ReaderT FilePath IO ()
-		save bytes = ask >>= lift . flip writeFile bytes . place
+		save :: ByteString -> Reader FilePath :> IO := ()
+		save bytes = build ask >>= embed . flip writeFile bytes . place
 
 		place :: FilePath -> FilePath
 		place dir = dir </> title <> ".mp3"
 
-		failed :: ReaderT FilePath IO ()
-		failed = lift . print $ "Failed downloading track: " <> title
+		failed :: Reader FilePath :> IO := ()
+		failed = embed . print $ "Failed downloading track: " <> title

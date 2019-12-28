@@ -20,18 +20,20 @@ import "joint" Control.Joint.Modulator ((-<$>-))
 import "joint" Control.Joint.Transformer (type (:>), embed, build, unite)
 import "joint" Control.Joint.Base.Reader (Reader, ask)
 import "lens" Control.Lens (preview)
+import "tagged" Data.Tagged (untag)
 import "wreq" Network.Wreq (get, responseBody)
 
 import Data.Downloadable (Downloadable (download))
+import Data.Bandcamp.Title (Title, parse_title)
 import Data.Bandcamp.Filename (Filename (Filename))
 
-data Track = Track String Filename
+data Track = Track (Title Track) Filename
 
 instance FromJSON Track where
-	parseJSON (Object o) = Track <$> o .: "title" <*> o .: "file"
+	parseJSON (Object o) = Track <$> (parse_title $ Object o) <*> o .: "file"
 
 instance Downloadable Track where
-	download (Track title (Filename Nothing)) = embed . Concurrently . print $ "Track <" <> title <> "> not found..."
+	download (Track title (Filename Nothing)) = embed . Concurrently . print $ "Track <" <> untag title <> "> not found..."
 	download (Track title (Filename (Just link))) = Concurrently -<$>- (embed request >>= either (embed . print)
 		(maybe failed save . preview responseBody)) where
 
@@ -42,7 +44,7 @@ instance Downloadable Track where
 		save bytes = build ask >>= embed . flip writeFile bytes . place
 
 		place :: FilePath -> FilePath
-		place dir = dir </> title <> ".mp3"
+		place dir = dir </> untag title <> ".mp3"
 
 		failed :: Reader FilePath :> IO := ()
 		failed = embed . print $ "Failed downloading track: " <> title

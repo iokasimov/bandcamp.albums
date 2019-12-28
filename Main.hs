@@ -12,18 +12,18 @@ import "bytestring" Data.ByteString.Lazy (readFile)
 import "directory" System.Directory (createDirectoryIfMissing, getCurrentDirectory)
 import "filepath" System.FilePath.Posix ((</>))
 import "joint" Control.Joint.Composition (run)
+import "tagged" Data.Tagged (untag)
 
 import Data.Downloadable (download)
 import Data.Bandcamp.Album (Album (..))
 import Data.Bandcamp.Cover (Cover (..))
-import Data.Bandcamp.Current (Current (..))
 import Data.Bandcamp.Filename (Filename (..))
 import Data.Bandcamp.Track (Track (..))
 
 prepare_directory :: Album -> IO FilePath
-prepare_directory a@(Album (Current album) ts artist aid') = do
+prepare_directory a@(Album title ts artist aid') = do
 	current_dir <- getCurrentDirectory
-	let dir = current_dir </> "Temporary" </> artist </> album
+	let dir = current_dir </> "Temporary" </> artist </> untag title
 	createDirectoryIfMissing True dir
 	pure dir
 

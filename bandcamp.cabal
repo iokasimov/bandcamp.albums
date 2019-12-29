@@ -10,10 +10,22 @@ extra-source-files: README.md
 cabal-version: >=1.10
 
 library
-  build-depends: base, text, aeson, wreq, bytestring, lens, http-client, directory, async, transformers, filepath, terminal-progress-bar
-  default-extensions: LambdaCase, NoImplicitPrelude, OverloadedStrings, PackageImports, TypeApplications
+  build-depends: base, joint, tagged, text, aeson, wreq, bytestring, lens, http-client, directory, async, transformers, filepath, terminal-progress-bar
+  default-extensions:
+    DataKinds,
+    ExplicitNamespaces,
+    FlexibleContexts,
+    LambdaCase,
+    NoImplicitPrelude,
+    OverloadedStrings,
+    PackageImports,
+    RankNTypes,
+    TypeApplications,
+    TypeFamilies,
+    TypeOperators
   exposed-modules:
     Data.Downloadable
+    Data.Bandcamp.Title
     Data.Bandcamp.Cover
     Data.Bandcamp.Filename
     Data.Bandcamp.Track
@@ -21,6 +33,17 @@ library
 
 executable bandcamp
   main-is: Main.hs
-  build-depends: base, text, aeson, bytestring, lens, wreq, http-client, directory, async, transformers, directory, filepath, terminal-progress-bar
-  default-extensions: DataKinds, LambdaCase, NoImplicitPrelude, OverloadedStrings, PackageImports, TypeApplications
+  build-depends: base, joint, tagged, text, aeson, bytestring, lens, wreq, http-client, directory, async, transformers, directory, filepath, terminal-progress-bar
+  default-extensions:
+    DataKinds,
+    ExplicitNamespaces,
+    FlexibleContexts,
+    LambdaCase,
+    NoImplicitPrelude,
+    OverloadedStrings,
+    PackageImports,
+    RankNTypes,
+    TypeApplications,
+    TypeFamilies,
+    TypeOperators
   default-language: Haskell2010

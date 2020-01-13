@@ -6,14 +6,19 @@ import "base" Data.Monoid ((<>))
 import "base" Data.String (String)
 import "base" Text.Show (show)
 import "filepath" System.FilePath.Posix (FilePath, (</>))
-import "joint" Control.Joint.Modulator ((-<$>-))
+import "joint" Control.Joint.Abilities.Modulator ((-<$>-))
+
+import "base" System.IO (IO)
+import "joint" Control.Joint.Core (type (:=))
+import "joint" Control.Joint.Abilities.Transformer (type (:>), embed, build)
+import "joint" Control.Joint.Effects.Reader (Configured, Reader, ask)
 
 import Data.Downloadable (Downloadable (download), load)
 
 newtype Cover = Cover Int
 
 instance Downloadable Cover where
-	download (Cover aid) = Concurrently -<$>- load link place "album's cover" where
+	download (Cover aid) = Concurrently -<$>- (load link place "album's cover" :: Reader FilePath :> IO := ()) where
 
 		link :: String
 		link = "http://f4.bcbits.com/img/a" <> show aid <> "_10.jpg"

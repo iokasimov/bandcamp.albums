@@ -11,7 +11,7 @@ import "base" System.IO (FilePath, IO, print)
 import "bytestring" Data.ByteString.Lazy (readFile)
 import "directory" System.Directory (createDirectoryIfMissing, getCurrentDirectory)
 import "filepath" System.FilePath.Posix ((</>))
-import "joint" Control.Joint.Composition (run)
+import "joint" Control.Joint.Abilities.Composition (run)
 import "tagged" Data.Tagged (untag)
 
 import Data.Downloadable (download)

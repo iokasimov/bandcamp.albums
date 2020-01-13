@@ -9,9 +9,9 @@ import "base" Data.Functor ((<$>))
 import "base" Data.String (String)
 import "base" Data.Traversable (sequence, traverse)
 import "joint" Control.Joint.Core (type (:=))
-import "joint" Control.Joint.Modulator ((-<$>-))
-import "joint" Control.Joint.Transformer (type (:>), embed, build, unite)
-import "joint" Control.Joint.Base.Reader (Reader, ask)
+import "joint" Control.Joint.Abilities.Modulator ((-<$>-))
+import "joint" Control.Joint.Abilities.Transformer (type (:>), embed, build, unite)
+import "joint" Control.Joint.Effects.Reader (Reader, ask)
 -- import "terminal-progress-bar" System.ProgressBar
 -- 	(Progress (Progress), defStyle, incProgress, newProgressBar)
 

@@ -42,8 +42,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - github: iokasimov/joint
-  commit: 4020c78e284588e9fce74aa6c21d01d37b7b8d55
-# - joint-0.1.2@sha256:079488693dab4508b1549320ee07e14bd4afc5a61f9b402a9f667200a5328cc6,1143
+  commit: bbebb160364d0ef40553fca574836446320463b9
 
 # Override default flag values for local packages and extra-deps
 flags: {}

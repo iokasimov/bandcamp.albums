@@ -2,18 +2,15 @@ module Data.Bandcamp.Album where
 
 import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
 import "async" Control.Concurrent.Async (Concurrently (Concurrently, runConcurrently))
-import "base" Control.Applicative (pure, (<*>), (*>))
+import "base" Control.Applicative ((<*>))
 import "base" Control.Monad (void, (>>=))
-import "base" Data.Function ((.), ($))
+import "base" Data.Function (flip, (.), ($))
 import "base" Data.Functor ((<$>))
 import "base" Data.String (String)
-import "base" Data.Traversable (sequence, traverse)
+import "base" Data.Traversable (for)
 import "joint" Control.Joint.Core (type (:=))
-import "joint" Control.Joint.Abilities.Modulator ((-<$>-))
-import "joint" Control.Joint.Abilities.Transformer (type (:>), embed, build, unite)
-import "joint" Control.Joint.Effects.Reader (Reader, ask)
--- import "terminal-progress-bar" System.ProgressBar
--- 	(Progress (Progress), defStyle, incProgress, newProgressBar)
+import "joint" Control.Joint.Abilities (lift, run, (:>))
+import "joint" Control.Joint.Effects (Reader, get)
 
 import Data.Downloadable (Downloadable (download))
 import Data.Bandcamp.Title (Title, parse_title)
@@ -29,5 +26,6 @@ instance FromJSON Album where
 		<*> o .: "trackinfo" <*> o .: "artist" <*> (Cover <$> o .: "art_id")
 
 instance Downloadable Album where
-	download a@(Album _ tracks artist cover) = do
-		download cover *> void (traverse download tracks)
+	download a@(Album _ tracks artist cover) = lift get >>= \path -> do
+		let actions = download cover : (download <$> tracks)
+		lift $ void . runConcurrently . for actions $ Concurrently . flip run path

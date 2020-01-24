@@ -29,4 +29,4 @@ prepare_directory a@(Album title ts artist aid') = do
 
 main = decode @Album <$> readFile "scheme.json" >>= \case
 	Nothing -> print "Error: album.json is invalid..."
-	Just album -> prepare_directory album >>= runConcurrently . run (download album)
+	Just album -> prepare_directory album >>= run (download album)

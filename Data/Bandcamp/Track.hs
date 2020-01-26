@@ -1,12 +1,6 @@
 module Data.Bandcamp.Track where
 
 import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
-import "base" Control.Applicative ((<*>))
-import "base" Data.Function ((.), ($))
-import "base" Data.Functor ((<$>))
-import "base" Data.Maybe (Maybe (Just, Nothing))
-import "base" Data.Monoid ((<>))
-import "base" System.IO (print)
 import "filepath" System.FilePath.Posix (FilePath, (</>))
 import "joint" Control.Joint.Abilities (lift)
 import "tagged" Data.Tagged (untag)

@@ -1,10 +1,5 @@
 module Data.Bandcamp.Cover where
 
-import "base" Data.Int (Int)
-import "base" Data.Function ((.), ($))
-import "base" Data.Monoid ((<>))
-import "base" Data.String (String)
-import "base" Text.Show (show)
 import "filepath" System.FilePath.Posix (FilePath, (</>))
 
 import Data.Downloadable (Downloadable (download), load)

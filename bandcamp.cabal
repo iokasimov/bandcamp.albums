@@ -16,7 +16,6 @@ library
     ExplicitNamespaces,
     FlexibleContexts,
     LambdaCase,
-    NoImplicitPrelude,
     OverloadedStrings,
     PackageImports,
     RankNTypes,
@@ -30,6 +29,7 @@ library
     Data.Bandcamp.Filename
     Data.Bandcamp.Track
     Data.Bandcamp.Album
+  ghc-options: -Wall -fno-warn-tabs
 
 executable bandcamp
   main-is: Main.hs
@@ -39,11 +39,18 @@ executable bandcamp
     ExplicitNamespaces,
     FlexibleContexts,
     LambdaCase,
-    NoImplicitPrelude,
     OverloadedStrings,
     PackageImports,
     RankNTypes,
     TypeApplications,
     TypeFamilies,
     TypeOperators
+  other-modules:
+    Data.Bandcamp.Album
+    Data.Bandcamp.Cover
+    Data.Bandcamp.Filename
+    Data.Bandcamp.Title
+    Data.Bandcamp.Track
+    Data.Downloadable
   default-language: Haskell2010
+  ghc-options: -Wall -fno-warn-tabs

@@ -18,4 +18,4 @@ prepare_directory a@(Album title ts artist aid') = do
 
 main = decode @Album <$> Bytes.readFile "scheme.json" >>= \case
 	Nothing -> print "Error: album.json is invalid..."
-	Just album -> prepare_directory album >>= run (download album)
+	Just album -> prepare_directory album >>= run . run (download album) >>= either print print

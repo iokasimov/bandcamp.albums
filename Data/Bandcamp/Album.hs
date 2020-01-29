@@ -23,6 +23,6 @@ instance FromJSON Album where
 		<*> o .: "trackinfo" <*> o .: "artist" <*> (Cover <$> o .: "art_id")
 
 instance Downloadable Album where
-	download a@(Album _ tracks artist cover) = lift get >>= \path -> do
-		let actions = download cover : (download <$> tracks)
-		lift $ void . runConcurrently . for actions $ Concurrently . flip run path
+	download (Album _ tracks _ cover) = lift (get @FilePath) >>= \path ->
+		let actions = download cover : (download <$> tracks) in
+		lift . void . runConcurrently . for actions $ Concurrently . run . flip run path

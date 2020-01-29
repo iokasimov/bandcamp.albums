@@ -10,7 +10,7 @@ import Data.Downloadable (download)
 import Data.Bandcamp.Album (Album (Album))
 
 prepare_directory :: Album -> IO FilePath
-prepare_directory a@(Album title ts artist aid') = do
+prepare_directory (Album title _ artist _) = do
 	current_dir <- getCurrentDirectory
 	let dir = current_dir </> "Temporary" </> artist </> untag title
 	createDirectoryIfMissing True dir

@@ -1,13 +1,11 @@
 module Data.Bandcamp.Album where
 
-import "aeson" Data.Aeson (FromJSON (parseJSON), Value (Object), (.:))
+import "aeson" Data.Aeson (FromJSON (parseJSON), withObject, (.:))
 import "async" Control.Concurrent.Async (Concurrently (Concurrently, runConcurrently))
 import "base" Control.Applicative ((<*>))
 import "base" Control.Monad (void)
 import "base" Data.Traversable (for)
-import "joint" Control.Joint.Core (type (:=))
-import "joint" Control.Joint.Abilities (lift, run, (:>))
-import "joint" Control.Joint.Effects (Reader, get)
+import "joint" Control.Joint (get, lift, run)
 
 import Data.Downloadable (Downloadable (download))
 import Data.Bandcamp.Title (Title, parse_title)
@@ -19,7 +17,7 @@ type Artist = String
 data Album = Album (Title Album) [Track] Artist Cover
 
 instance FromJSON Album where
-	parseJSON (Object o) = Album <$> (o .: "current" >>= parse_title)
+	parseJSON = withObject "Album" $ \o -> Album <$> (o .: "current" >>= parse_title)
 		<*> o .: "trackinfo" <*> o .: "artist" <*> (Cover <$> o .: "art_id")
 
 instance Downloadable Album where

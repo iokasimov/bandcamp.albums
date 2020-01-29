@@ -1,6 +1,6 @@
 module Data.Bandcamp.Cover where
 
-import "filepath" System.FilePath.Posix (FilePath, (</>))
+import "filepath" System.FilePath.Posix ((</>))
 
 import Data.Downloadable (Downloadable (download), load)
 

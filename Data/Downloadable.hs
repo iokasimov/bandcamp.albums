@@ -18,7 +18,7 @@ load :: (Monad t, Configured FilePath t, Liftable IO t, Failable HttpException t
 load link place title = request >>= maybe failed (save place) . preview HTTP.responseBody where
 
 	save :: (Monad t, Liftable IO t, Configured FilePath t) => (FilePath -> FilePath) -> ByteString -> t ()
-	save path bytes = lift get >>= lift . flip Bytes.writeFile bytes . path
+	save path bytes = get >>= lift . flip Bytes.writeFile bytes . path
 
 	request :: (Monad t, Liftable IO t, Failable HttpException t) => t (Response ByteString)
 	request = lift (try @HttpException $ HTTP.get link) >>= lift

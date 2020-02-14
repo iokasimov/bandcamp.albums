@@ -1,7 +1,7 @@
 import "aeson" Data.Aeson (decode)
 import "directory" System.Directory (createDirectoryIfMissing, getCurrentDirectory)
 import "filepath" System.FilePath.Posix ((</>))
-import "joint" Control.Joint.Abilities.Composition (run)
+import "joint" Control.Joint.Abilities.Interpreted (run)
 import "tagged" Data.Tagged (untag)
 
 import qualified "bytestring" Data.ByteString.Lazy as Bytes (readFile)
